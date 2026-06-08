@@ -25,8 +25,39 @@
   under `xvfb-run -a -s "-screen 0 1360x900x24"`; the winit X11 path also needs
   `libxkbcommon-x11` installed.
 - `Window::take_snapshot()` (Rust) renders the current window to a pixel buffer —
-  handy for a quick screenshot — but for interactive inspection prefer the MCP
-  server below.
+  handy for a quick screenshot from inside your app — but for interactive
+  inspection prefer the MCP server below.
+
+### Screenshotting a `.slint` file headlessly (`slint-viewer --screenshot`)
+
+The simplest way to render a component to an image **with no windowing system and
+no app code** is the viewer (Slint >= 1.17):
+
+```sh
+slint-viewer --screenshot out.png ui/main.slint          # PNG (or .jpg, or - for stdout)
+slint-viewer --screenshot out.png --component MyCard ui/widgets.slint
+slint-viewer --screenshot out.png --load-data props.json ui/main.slint
+```
+
+- With no `--backend`, the viewer installs its own headless software backend, so
+  it works on a bare box (no X/Wayland, no Xvfb). It renders the component at its
+  preferred size and exits. `--style`, `-I`/`-L` (include/library paths),
+  `SLINT_SCALE_FACTOR`, and `--component` (defaults to the last exported one) all
+  apply.
+- `--load-data file.json` sets the **root component's** properties before
+  rendering — great for previewing data-driven components. It does **not**
+  populate `global` singletons, and it doesn't run your host-language logic, so an
+  app whose models live in a Rust/C++/JS/Python global will render its default/
+  empty state. For a screenshot of real application state, drive the running app
+  via the MCP server (`take_screenshot`) or `Window::take_snapshot()` instead.
+- Install from a released version with `cargo install slint-viewer` (add
+  `--git https://github.com/slint-ui/slint` for unreleased builds). A
+  `--no-default-features --features renderer-software` build avoids GPU/windowing
+  dependencies.
+
+Rule of thumb: **`slint-viewer --screenshot`** for previewing components/layout/
+theme during development; the **MCP server** when you need the running app with
+real data and interactions.
 
 ## MCP Server for AI-Assisted Debugging
 
