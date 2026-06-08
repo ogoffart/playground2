@@ -6,11 +6,15 @@ These bite almost everyone at least once.
   Convert with `value * 1px` or `len / 1px`. `length`-typed properties like
   `letter-spacing` reject unitless/`em` values — use `px` (e.g. `0.4px`, not
   `0.04em`).
-- **Colors.** No OKLCH/HSL literals. Use `#rgb`, `#rrggbb`, `#rrggbbaa`,
-  `rgb(r,g,b)`, or `rgba(r,g,b,a)` where `a` is `0.0..1.0`. Convert design tokens
-  to hex/rgba ahead of time. Color helpers: `.brighter(f)`, `.darker(f)`,
-  `.with-alpha(a)`, `.transparentize(f)`, `.mix(other, f)`; read channels with
-  `.red`/`.green`/`.blue`/`.alpha`.
+- **Colors.** Use hex literals (`#rgb`, `#rrggbb`, `#rrggbbaa`) or the color
+  functions: `rgb(r,g,b)`, `rgba(r,g,b,a)` (alpha `0.0..1.0`), `hsv(h,s,v[,a])`,
+  and **`oklch(l, c, h[, a])`** — so OKLCH design tokens can be used directly,
+  e.g. `oklch(0.55, 0.17, 256)`. In `oklch`, `l` is lightness `0..1`, `c` is
+  chroma (a number, or a `%` where `100% == 0.4`), `h` is hue in degrees (a number
+  or an `angle`), `a` is alpha `0..1`. (There is `hsv` but no `hsl`.) Convert a
+  color back with `.to-oklch()` / `.to-hsv()`. Color helpers: `.brighter(f)`,
+  `.darker(f)`, `.with-alpha(a)`, `.transparentize(f)`, `.mix(other, f)`; read
+  channels with `.red`/`.green`/`.blue`/`.alpha`.
 - **Math functions** come in two callable forms (not bare names, generally):
   - methods on a number: `x.floor()`, `x.ceil()`, `x.round()`, `x.sqrt()`,
     `x.mod(y)`, `x.abs()`, `x.clamp(lo, hi)`, `x.max(y)`, `x.min(y)`,

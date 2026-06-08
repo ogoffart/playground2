@@ -47,8 +47,22 @@ SLINT_EMIT_DEBUG_INFO=1 SLINT_MCP_PORT=9315 cargo run --features slint/mcp
 ```
 
 Do **not** add `mcp` to the `[features]` section of `Cargo.toml` — use the
-`--features` flag. On a headless machine, prefix with
-`SLINT_BACKEND=winit-software xvfb-run -a -s "-screen 0 1360x900x24"`.
+`--features` flag.
+
+**Headless / no display.** Two options:
+- *Screenshots needed*: use the software renderer under a virtual display —
+  `SLINT_BACKEND=winit-software xvfb-run -a -s "-screen 0 1360x900x24" cargo run --features slint/mcp`
+  (the winit X11 path needs `libxkbcommon-x11`).
+- *Inspection/interaction only (no display at all)*: the MCP server is hosted by
+  Slint's windowless **testing backend**. Run with `SLINT_BACKEND=testing` and
+  the testing backend compiled in. Element-tree queries, `click_element`,
+  `dispatch_key_event`, etc. work with no X/Wayland server — but the testing
+  backend's renderer is a stub, so **`take_screenshot` returns "not implemented
+  by the platform"**. Use this for headless automation/CI of interactions; use the
+  software-renderer+Xvfb route when you actually need pixels. (Caveat: the `slint`
+  crate doesn't currently re-export the selector's `backend-testing` feature, so
+  enabling `SLINT_BACKEND=testing` may require depending on
+  `i-slint-backend-selector` with its `backend-testing` feature.)
 
 **Step 2**: Connect to `http://localhost:9315/mcp` using Streamable HTTP
 (JSON-RPC). When scripting from the shell, `curl` is the most reliable client —
