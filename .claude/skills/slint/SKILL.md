@@ -5,48 +5,45 @@ description: Expert guidance for building, debugging, and working with Slint GUI
 
 # Slint Development Skill
 
-Use this skill when building, debugging, or reviewing applications that use [Slint](https://slint.dev), a declarative GUI toolkit for native user interfaces across desktop, embedded, mobile, and web platforms.
+Use when building, debugging, or reviewing apps that use [Slint](https://slint.dev),
+a declarative GUI toolkit for native UIs across desktop, embedded, mobile, and web.
 
-## When to Use This Skill
+## When to Use
 
 - Writing or debugging `.slint` files
 - Integrating Slint with Rust, C++, JavaScript, or Python
-- Investigating layout, binding, rendering, or event-handling issues
-- Enabling the Slint MCP server for runtime inspection and UI debugging
-- Explaining or reviewing Slint-specific code patterns
+- Layout, binding, rendering, or event-handling issues
+- Enabling the Slint MCP server for runtime inspection
+- Reviewing Slint-specific code patterns
 
 ## How to Help
 
-- Prefer idiomatic Slint patterns over manual UI workarounds.
-- Match guidance to the user's language binding and Slint version.
-- Reach for the reference files below — most first-time compile errors and
-  "why doesn't this fill / why is my padding ignored" questions are answered in
-  `reference/gotchas.md` and `reference/language-and-layout.md`.
+- Prefer idiomatic Slint patterns; match the user's language binding and version.
+- Most "won't compile" / "won't fill" / "padding ignored" questions are answered
+  in `reference/gotchas.md` and `reference/language-and-layout.md` — check there.
 - Suggest the MCP server when runtime inspection or interaction would help.
-- When unsure about an element/property, check the version's reference docs
-  (see **Documentation Reference**) rather than guessing — the API is small and
-  precise.
+- When unsure about an element/property, check the version's docs (below) rather
+  than guessing — the API is small and precise.
 
 ## Reference Files (read on demand)
 
-This entry point is intentionally short. Open the relevant file when the task
-calls for it:
+This entry point is short by design. Open the relevant file when needed:
 
-| File | Read it when… |
+| File | Read when… |
 |---|---|
-| `setup.md` | Starting a project or wiring the build (Rust/C++/Node/Python). |
-| `reference/language-and-layout.md` | Writing components; deciding layouts; an element won't size/fill as expected. |
-| `reference/gotchas.md` | A `.slint` file won't compile, or colors/units/math/rotation/enums behave oddly. |
-| `reference/events-and-overlays.md` | Handling clicks/keys/modifiers, or building popovers/menus/context menus. |
-| `reference/drawing-and-theming.md` | Drawing custom vector graphics with `Path`, or doing light/dark theming. |
+| `setup.md` | Starting a project / wiring the build (Rust/C++/Node/Python). |
+| `reference/language-and-layout.md` | Writing components; an element won't size/fill as expected. |
+| `reference/gotchas.md` | A file won't compile, or colors/units/math/rotation/enums behave oddly. |
+| `reference/events-and-overlays.md` | Clicks/keys/modifiers, or popovers/menus/context menus. |
+| `reference/drawing-and-theming.md` | Custom vector graphics (`Path`), or light/dark theming. |
 | `reference/interop.md` | Connecting the UI to host-language logic (models, callbacks, globals). |
-| `reference/debugging-and-mcp.md` | Debugging at runtime, headless/CI rendering, or driving the app via the MCP server. |
+| `reference/debugging-and-mcp.md` | Runtime debugging, headless/CI rendering, screenshots, the MCP server. |
 | `lsp-install.md` | Installing the `slint-lsp` language server. |
 
 ## `.slint` in 30 seconds
 
-`.slint` files are declarative and reactive: a property binding is an expression
-that re-evaluates automatically when anything it reads changes.
+Declarative and reactive: a property binding re-evaluates automatically when
+anything it reads changes.
 
 ```slint
 import { Button, VerticalBox } from "std-widgets.slint";
@@ -63,17 +60,14 @@ component Counter inherits Rectangle {     // root element decides fill behavior
 }
 ```
 
-Property directions: `in` / `out` / `in-out` / `private`. Two-way bind with
-`a <=> b`. Conditionals/loops: `if cond : E {}`, `for it[i] in model : E {}`.
-Singletons for shared state and host interop: `export global Foo { ... }`. Run
-one-time code with `init => { ... }`. The deeper material is in the reference
-files above.
+Property directions: `in` / `out` / `in-out` / `private`. Two-way bind: `a <=> b`.
+Control flow: `if cond : E {}`, `for it[i] in model : E {}`. Shared state & host
+interop: `export global Foo { ... }`. One-time code: `init => { ... }`. Details
+are in the reference files.
 
 ## Documentation Reference
 
-Full docs for the latest version: https://slint.dev/docs — the Language guide
-(concepts, syntax, patterns), the Reference (elements, properties, types,
-standard widgets), Language integrations (Rust, C++, Node.js, Python), and
-Tutorials. For a specific version use
-`https://releases.slint.dev/<version>/docs` (e.g. `…/1.15.1/docs`). When you need
-the exact signature of an element or property, consult these rather than guessing.
+Latest: https://slint.dev/docs — Language guide, Reference (elements, properties,
+types, widgets), Language integrations (Rust/C++/Node/Python), Tutorials. Pin a
+version with `https://releases.slint.dev/<version>/docs` (e.g. `…/1.15.1/docs`).
+Consult these for exact element/property signatures rather than guessing.
