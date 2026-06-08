@@ -1,0 +1,199 @@
+import { Icons } from "icons.slint";
+import { Theme } from "theme.slint";
+
+// 24-grid line glyph. stroke-width scaled by size/24 to match the browser SVG.
+export component Icon {
+    in property <string> name;
+    in property <length> size: 18px;
+    in property <length> sw: 1.6px;
+    in property <brush> color: Theme.text;
+    width: size;
+    height: size;
+    Path {
+        width: 100%;
+        height: 100%;
+        viewbox-width: 24;
+        viewbox-height: 24;
+        commands: Icons.path(root.name);
+        stroke: root.color;
+        stroke-width: root.sw * (root.size / 24px);
+        fill: transparent;
+    }
+    Path {
+        width: 100%;
+        height: 100%;
+        viewbox-width: 24;
+        viewbox-height: 24;
+        commands: Icons.fill(root.name);
+        fill: root.color;
+    }
+}
+
+export component IconButton {
+    in property <string> icon;
+    in property <length> icon-size: 18px;
+    in property <length> btn-w: 30px;
+    in property <length> btn-h: 30px;
+    in property <length> radius: 7px;
+    in property <bool> checked: false;
+    in property <bool> btn-enabled: true;
+    in property <bool> danger-hover: false;
+    in property <brush> base-color: Theme.text-2;
+    callback clicked;
+
+    width: btn-w;
+    height: btn-h;
+    opacity: root.btn-enabled ? 1.0 : 0.32;
+
+    Rectangle {
+        border-radius: root.radius;
+        background: !root.btn-enabled ? transparent
+            : root.checked ? Theme.accent-soft
+            : (root.danger-hover && ta.has-hover) ? Theme.danger
+            : ta.has-hover ? Theme.hover
+            : ta.pressed ? Theme.active
+            : transparent;
+        animate background { duration: 110ms; }
+
+        Icon {
+            name: root.icon;
+            size: root.icon-size;
+            color: !root.btn-enabled ? Theme.text-2
+                : root.checked ? Theme.accent
+                : (root.danger-hover && ta.has-hover) ? #ffffff
+                : ta.has-hover ? Theme.text
+                : root.base-color;
+        }
+    }
+    ta := TouchArea {
+        enabled: root.btn-enabled;
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+export component Meter {
+    in property <float> pct;   // 0..1
+    height: 4px;
+    Rectangle {
+        background: Theme.border-strong;
+        border-radius: 3px;
+        clip: true;
+        Rectangle {
+            x: 0;
+            width: parent.width * root.pct;
+            height: 100%;
+            border-radius: 3px;
+            background: root.pct > 0.92 ? Theme.full
+                : root.pct > 0.8 ? Theme.warn
+                : Theme.accent;
+            animate width { duration: 600ms; easing: ease; }
+        }
+    }
+}
+
+export component ProgressBar {
+    in property <float> pct;
+    in property <brush> track: Theme.border-strong;
+    height: 4px;
+    Rectangle {
+        background: root.track;
+        border-radius: 3px;
+        clip: true;
+        Rectangle {
+            x: 0;
+            width: parent.width * root.pct;
+            height: 100%;
+            border-radius: 3px;
+            background: Theme.accent;
+            animate width { duration: 300ms; }
+        }
+    }
+}
+
+export component TagDot inherits Rectangle {
+    in property <int> color-index;
+    in property <length> d: 11px;
+    width: d;
+    height: d;
+    border-radius: d / 2;
+    background: Theme.tag-color(color-index);
+    border-width: 1px;
+    border-color: #00000026;
+}
+
+export component MenuItem {
+    in property <string> label;
+    in property <string> icon: "";
+    in property <string> shortcut: "";
+    in property <bool> checked: false;
+    in property <bool> show-check: false;
+    in property <bool> danger: false;
+    callback clicked;
+
+    height: 30px;
+    Rectangle {
+        border-radius: 6px;
+        background: ta.has-hover ? (root.danger ? Theme.danger : Theme.accent) : transparent;
+        animate background { duration: 100ms; }
+
+        HorizontalLayout {
+            padding-left: 9px;
+            padding-right: 9px;
+            spacing: 10px;
+            alignment: start;
+
+            if root.show-check : Rectangle {
+                width: 16px;
+                Icon {
+                    name: root.checked ? "check" : "";
+                    size: 15px;
+                    color: ta.has-hover ? Theme.accent-fg : Theme.accent;
+                }
+            }
+            if root.icon != "" : Icon {
+                name: root.icon;
+                size: 16px;
+                color: ta.has-hover ? Theme.accent-fg : Theme.text-2;
+            }
+            Text {
+                text: root.label;
+                vertical-alignment: center;
+                font-size: 13px;
+                color: ta.has-hover ? Theme.accent-fg : Theme.text;
+            }
+            if root.shortcut != "" : Text {
+                text: root.shortcut;
+                vertical-alignment: center;
+                horizontal-alignment: right;
+                font-size: 11px;
+                color: ta.has-hover ? Theme.accent-fg : Theme.text-3;
+            }
+        }
+    }
+    ta := TouchArea {
+        mouse-cursor: pointer;
+        clicked => { root.clicked(); }
+    }
+}
+
+export component MenuHead inherits Text {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.4px;
+    color: Theme.text-3;
+    height: 24px;
+    vertical-alignment: center;
+    // uppercase handled by caller text
+}
+
+export component MenuSep inherits Rectangle {
+    height: 9px;
+    Rectangle {
+        height: 1px;
+        y: 4px;
+        x: 6px;
+        width: parent.width - 12px;
+        background: Theme.border;
+    }
+}

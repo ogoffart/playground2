@@ -1,0 +1,92 @@
+import { FileRow, DriveRow, FavRow, TagRow, CrumbRow, DetailRow } from "structs.slint";
+
+// All model/state data pushed from Rust.
+export global AppData {
+    in property <[FileRow]> files;
+    in property <[DriveRow]> drives;
+    in property <[FavRow]> favorites;
+    in property <[TagRow]> tags;
+    in property <[CrumbRow]> crumbs;
+
+    in property <string> view: "list";          // "list" | "grid"
+    in property <string> query;
+    in property <bool> sidebar-collapsed;
+    in property <bool> details-collapsed;
+    in property <bool> can-back;
+    in property <bool> can-forward;
+    in property <bool> can-up;
+
+    in property <string> sort-key: "name";
+    in property <string> sort-dir: "asc";        // "asc" | "desc"
+    in property <bool> sort-active;
+
+    in property <string> theme-icon: "system";
+    in property <int> theme-pref: 0;             // 0 system, 1 light, 2 dark
+
+    // status bar
+    in property <string> status-left;
+    in property <string> drive-icon: "ssd";
+    in property <string> drive-available;
+
+    // details panel
+    in property <int> detail-mode;               // 0 none, 1 single, 2 multi
+    in property <string> det-name;
+    in property <string> det-kind;
+    in property <string> det-icon;
+    in property <bool> det-is-media;
+    in property <bool> det-is-folder;
+    in property <[int]> det-tags;
+    in property <[DetailRow]> det-rows;
+    in property <string> det-hint;
+
+    // transfer / download
+    in property <bool> transfer-active;
+    in property <float> transfer-pct;
+    in property <string> transfer-name;
+    in property <string> transfer-stat;
+    in-out property <bool> xfer-open;
+}
+
+// Callbacks handled in Rust.
+export global Logic {
+    callback fav-clicked(int);
+    callback tag-clicked(string);
+    callback drive-eject(string);
+    callback crumb-clicked(int);
+    callback back();
+    callback forward();
+    callback up();
+    callback toggle-sidebar();
+    callback toggle-details();
+
+    callback row-down(int, bool, bool, bool);    // index, ctrl, shift, right-button
+    callback row-open(int);
+    callback row-context(int, length, length);   // index, window-x, window-y
+    callback empty-click();
+
+    callback sort-col(string);
+    callback set-view(string);
+    callback set-query(string);
+    callback set-sort-key(string);
+    callback set-sort-dir(string);
+    callback set-theme(int);
+
+    callback menu-action(string);                // new-folder, get-info, duplicate, rename, share, trash, refresh
+    callback tag-toggle(string);
+
+    // keyboard
+    callback key-move(bool);                      // true = down, false = up
+    callback key-enter();
+    callback key-escape();
+    callback key-select-all();
+    callback key-trash();
+}
+
+// Pure-UI popover/menu state (no Rust involvement).
+export global Menus {
+    in-out property <string> open;               // "", sort, theme, more, context
+    in-out property <length> x;
+    in-out property <length> y;
+    in-out property <int> ctx-index: -1;
+    public function close() { self.open = ""; }
+}

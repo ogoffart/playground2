@@ -1,0 +1,224 @@
+import { Theme } from "theme.slint";
+import { Icon, IconButton, TagDot } from "widgets.slint";
+import { AppData, Logic, Menus } from "globals.slint";
+import { CrumbRow } from "structs.slint";
+
+export component Titlebar inherits Rectangle {
+    height: 38px;
+    background: Theme.titlebar;
+    drop-shadow-blur: 0;
+    Rectangle {
+        height: 1px;
+        y: parent.height - 1px;
+        background: Theme.border;
+    }
+    HorizontalLayout {
+        padding-left: 12px;
+        padding-right: 12px;
+        spacing: 10px;
+        // brand
+        HorizontalLayout {
+            spacing: 8px;
+            Rectangle {
+                width: 18px;
+                height: 18px;
+                y: (parent.height - 18px) / 2;
+                border-radius: 5px;
+                background: @linear-gradient(150deg, Theme.brand-a, Theme.brand-b);
+                Icon { name: "folder"; size: 11px; sw: 2px; color: #ffffff; }
+            }
+            Text {
+                text: "Harbor";
+                vertical-alignment: center;
+                font-size: 12.5px;
+                font-weight: 650;
+                letter-spacing: 0.1px;
+                color: Theme.text;
+            }
+        }
+        Rectangle { horizontal-stretch: 1; }   // drag region
+        // window controls
+        HorizontalLayout {
+            spacing: 4px;
+            IconButton { icon: "min"; icon-size: 15px; btn-w: 26px; btn-h: 24px; radius: 6px; }
+            IconButton { icon: "max"; icon-size: 12px; btn-w: 26px; btn-h: 24px; radius: 6px; }
+            IconButton { icon: "close"; icon-size: 14px; btn-w: 26px; btn-h: 24px; radius: 6px; danger-hover: true; }
+        }
+    }
+}
+
+component Crumb {
+    in property <CrumbRow> crumb;
+    height: 26px;
+    Rectangle {
+        border-radius: 6px;
+        background: ta.has-hover && !root.crumb.last ? Theme.hover : transparent;
+        animate background { duration: 120ms; }
+        HorizontalLayout {
+            padding-left: 8px;
+            padding-right: 8px;
+            spacing: 6px;
+            if root.crumb.tag >= 0 : TagDot { color-index: root.crumb.tag; d: 9px; }
+            if root.crumb.icon != "" : Icon { name: root.crumb.icon; size: 14px; color: Theme.text-3; }
+            Text {
+                text: root.crumb.label;
+                vertical-alignment: center;
+                font-size: 13px;
+                font-weight: root.crumb.last ? 600 : 520;
+                color: root.crumb.last ? Theme.text : Theme.text-3;
+            }
+        }
+    }
+    ta := TouchArea {
+        mouse-cursor: root.crumb.nav-index >= 0 ? pointer : default;
+        clicked => { if (root.crumb.nav-index >= 0) { Logic.crumb-clicked(root.crumb.nav-index); } }
+    }
+}
+
+component Breadcrumb {
+    HorizontalLayout {
+        alignment: start;
+        spacing: 1px;
+        for c[i] in AppData.crumbs : HorizontalLayout {
+            spacing: 1px;
+            if i > 0 : Icon { name: "chevronRight"; size: 13px; color: Theme.text-3; }
+            Crumb { crumb: c; }
+        }
+    }
+}
+
+export component Toolbar inherits Rectangle {
+    height: 52px;
+    background: Theme.win-bg;
+    Rectangle {
+        height: 1px;
+        y: parent.height - 1px;
+        background: Theme.border;
+    }
+    HorizontalLayout {
+        padding-left: 10px;
+        padding-right: 10px;
+        spacing: 8px;
+        alignment: stretch;
+
+        VerticalLayout { alignment: center;
+            IconButton { icon: "sidebar"; clicked => { Logic.toggle-sidebar(); } }
+        }
+
+        VerticalLayout { alignment: center; HorizontalLayout { spacing: 2px;
+            IconButton { icon: "back"; btn-enabled: AppData.can-back; clicked => { Logic.back(); } }
+            IconButton { icon: "forward"; btn-enabled: AppData.can-forward; clicked => { Logic.forward(); } }
+            IconButton { icon: "up"; btn-enabled: AppData.can-up; clicked => { Logic.up(); } }
+        } }
+
+        VerticalLayout { horizontal-stretch: 1; alignment: center;
+            Breadcrumb { }
+        }
+
+        // search box
+        VerticalLayout { alignment: center;
+        search-bg := Rectangle {
+            width: search-input.has-focus ? 230px : 190px;
+            height: 30px;
+            border-radius: 8px;
+            background: Theme.content-bg;
+            border-width: 1px;
+            border-color: search-input.has-focus ? Theme.accent : Theme.border;
+            animate width { duration: 180ms; easing: ease; }
+            animate border-color { duration: 120ms; }
+            HorizontalLayout {
+                padding-left: 10px;
+                padding-right: 10px;
+                spacing: 7px;
+                Icon { name: "search"; size: 15px; color: Theme.text-3; }
+                Rectangle {
+                    search-input := TextInput {
+                        vertical-alignment: center;
+                        font-size: 13px;
+                        color: Theme.text;
+                        text: AppData.query;
+                        single-line: true;
+                        edited => { Logic.set-query(self.text); }
+                    }
+                    if search-input.text == "" : Text {
+                        text: "Search";
+                        x: 0;
+                        vertical-alignment: center;
+                        font-size: 13px;
+                        color: Theme.text-3;
+                    }
+                }
+            }
+        }
+        }
+
+        // view segmented control
+        VerticalLayout { alignment: center;
+        Rectangle {
+            height: 30px;
+            width: 68px;
+            border-radius: 8px;
+            background: Theme.content-bg;
+            border-width: 1px;
+            border-color: Theme.border;
+            HorizontalLayout {
+                padding: 2px;
+                spacing: 2px;
+                seg-button := Rectangle {
+                    width: 30px;
+                    border-radius: 6px;
+                    background: AppData.view == "list" ? Theme.win-bg : transparent;
+                    drop-shadow-blur: AppData.view == "list" ? 2px : 0;
+                    drop-shadow-color: #00000020;
+                    drop-shadow-offset-y: 1px;
+                    Icon { name: "list"; size: 17px; color: AppData.view == "list" ? Theme.accent : Theme.text-3; }
+                    TouchArea { mouse-cursor: pointer; clicked => { Logic.set-view("list"); } }
+                }
+                Rectangle {
+                    width: 30px;
+                    border-radius: 6px;
+                    background: AppData.view == "grid" ? Theme.win-bg : transparent;
+                    drop-shadow-blur: AppData.view == "grid" ? 2px : 0;
+                    drop-shadow-color: #00000020;
+                    drop-shadow-offset-y: 1px;
+                    Icon { name: "grid"; size: 16px; color: AppData.view == "grid" ? Theme.accent : Theme.text-3; }
+                    TouchArea { mouse-cursor: pointer; clicked => { Logic.set-view("grid"); } }
+                }
+            }
+        }
+        }
+
+        VerticalLayout { alignment: center; HorizontalLayout { spacing: 2px;
+            sort-btn := IconButton {
+                icon: "sort";
+                checked: AppData.sort-active;
+                clicked => {
+                    Menus.x = self.absolute-position.x;
+                    Menus.y = self.absolute-position.y + self.height + 6px;
+                    Menus.open = "sort";
+                }
+            }
+            theme-btn := IconButton {
+                icon: AppData.theme-icon;
+                clicked => {
+                    Menus.x = self.absolute-position.x + self.width;
+                    Menus.y = self.absolute-position.y + self.height + 6px;
+                    Menus.open = "theme";
+                }
+            }
+            IconButton {
+                icon: "info";
+                checked: !AppData.details-collapsed;
+                clicked => { Logic.toggle-details(); }
+            }
+            more-btn := IconButton {
+                icon: "ellipsis";
+                clicked => {
+                    Menus.x = self.absolute-position.x + self.width;
+                    Menus.y = self.absolute-position.y + self.height + 6px;
+                    Menus.open = "more";
+                }
+            }
+        } }
+    }
+}

@@ -1,0 +1,281 @@
+import { Theme } from "theme.slint";
+import { Icon, TagDot, ProgressBar } from "widgets.slint";
+import { AppData, Logic, Menus } from "globals.slint";
+import { FileRow } from "structs.slint";
+
+component FileIconView {
+    in property <FileRow> item;
+    in property <length> size: 18px;
+    in property <bool> selected;
+    Icon {
+        name: item.icon;
+        size: root.size;
+        color: root.selected ? Theme.sel-fg
+            : item.is-folder ? Theme.accent
+            : item.is-media ? Theme.media
+            : Theme.text-2;
+    }
+}
+
+component ColHeader {
+    in property <string> label;
+    in property <string> col-key;
+    in property <bool> right;
+    property <bool> sorted: AppData.sort-key == root.col-key;
+    horizontal-stretch: root.right ? 0 : 1;
+    HorizontalLayout {
+        padding-left: 6px;
+        padding-right: 6px;
+        spacing: 4px;
+        alignment: root.right ? end : start;
+        Text {
+            text: root.label;
+            vertical-alignment: center;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: root.sorted ? Theme.accent : (ta.has-hover ? Theme.text : Theme.text-3);
+        }
+        Icon {
+            name: (root.sorted && AppData.sort-dir == "desc") ? "chevronUp" : "chevronDown";
+            size: 12px;
+            color: Theme.accent;
+            opacity: root.sorted ? 1 : 0;
+        }
+    }
+    ta := TouchArea { mouse-cursor: pointer; clicked => { Logic.sort-col(root.col-key); } }
+}
+
+component Row {
+    in property <FileRow> item;
+    in property <int> index;
+    height: 34px;
+    Rectangle {
+        x: 8px;
+        width: parent.width - 16px;
+        height: 34px;
+        border-radius: 7px;
+        background: root.item.selected ? Theme.sel-bg : (ta.has-hover ? Theme.hover : transparent);
+
+        HorizontalLayout {
+            padding-left: 6px;
+            padding-right: 6px;
+            // name
+            HorizontalLayout {
+                horizontal-stretch: 1;
+                padding-left: 6px;
+                padding-right: 6px;
+                spacing: 9px;
+                VerticalLayout { alignment: center;
+                    FileIconView { item: root.item; selected: root.item.selected; }
+                }
+                Text {
+                    text: root.item.name;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                    font-size: 13px;
+                    font-weight: 500;
+                    overflow: elide;
+                    color: root.item.selected ? Theme.sel-fg : Theme.text;
+                }
+                VerticalLayout { alignment: center; HorizontalLayout { spacing: 3px;
+                    for t in root.item.tags : TagDot { color-index: t; d: 8px; }
+                } }
+            }
+            // date
+            HorizontalLayout {
+                width: 158px;
+                padding-left: 6px;
+                padding-right: 6px;
+                Text {
+                    text: root.item.date-text;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                    font-size: 12px;
+                    color: root.item.selected ? #ffffffcc : Theme.text-2;
+                }
+            }
+            // size / inline download
+            Rectangle {
+                width: 92px;
+                clip: true;
+                if root.item.downloading : HorizontalLayout {
+                    alignment: end;
+                    spacing: 8px;
+                    padding-right: 6px;
+                    VerticalLayout { alignment: center; ProgressBar { width: 50px; pct: root.item.progress; } }
+                    Text {
+                        text: round(root.item.progress * 100) + "%";
+                        vertical-alignment: center;
+                        font-size: 11px;
+                        color: root.item.selected ? #ffffffd9 : Theme.text-3;
+                    }
+                }
+                if !root.item.downloading : HorizontalLayout {
+                    padding-right: 6px;
+                    Text {
+                        text: root.item.size-text;
+                        horizontal-stretch: 1;
+                        vertical-alignment: center;
+                        horizontal-alignment: right;
+                        font-size: 12px;
+                        color: root.item.selected ? #ffffffcc : Theme.text-2;
+                    }
+                }
+            }
+            // kind
+            HorizontalLayout {
+                width: 128px;
+                padding-left: 6px;
+                padding-right: 6px;
+                Text {
+                    text: root.item.kind-text;
+                    vertical-alignment: center;
+                    horizontal-stretch: 1;
+                    font-size: 12px;
+                    overflow: elide;
+                    color: root.item.selected ? #ffffffcc : Theme.text-2;
+                }
+            }
+        }
+    }
+    ta := TouchArea {
+        mouse-cursor: default;
+        pointer-event(ev) => {
+            if (ev.kind == PointerEventKind.down) {
+                Logic.row-down(root.index,
+                    ev.modifiers.control || ev.modifiers.meta,
+                    ev.modifiers.shift,
+                    ev.button == PointerEventButton.right);
+                if (ev.button == PointerEventButton.right) {
+                    Menus.x = ta.absolute-position.x + ta.mouse-x;
+                    Menus.y = ta.absolute-position.y + ta.mouse-y;
+                    Menus.ctx-index = root.index;
+                    Menus.open = "context";
+                }
+            }
+        }
+        double-clicked => { Logic.row-open(root.index); }
+    }
+}
+
+export component ListView2 {
+    VerticalLayout {
+        width: 100%;
+        height: 100%;
+        // sticky header
+        Rectangle {
+            height: 30px;
+            background: Theme.content-bg;
+            Rectangle { height: 1px; y: parent.height - 1px; background: Theme.border; }
+            HorizontalLayout {
+                padding-left: 14px;
+                padding-right: 14px;
+                ColHeader { label: "Name"; col-key: "name"; }
+                ColHeader { label: "Date Modified"; col-key: "modified"; width: 158px; }
+                ColHeader { label: "Size"; col-key: "size"; width: 92px; right: true; }
+                ColHeader { label: "Kind"; col-key: "kind"; width: 128px; }
+            }
+        }
+        Flickable {
+            VerticalLayout {
+                padding-top: 4px;
+                padding-bottom: 8px;
+                for it[i] in AppData.files : Row { item: it; index: i; }
+            }
+        }
+    }
+}
+
+export component GridView2 {
+    property <length> pad: 16px;
+    property <length> gap: 6px;
+    property <length> minw: 116px;
+    property <float> cols-f: (self.width - 2 * pad + gap) / (minw + gap);
+    property <int> cols: cols-f < 1 ? 1 : cols-f.floor();
+    property <length> cellw: (self.width - 2 * pad - (cols - 1) * gap) / cols;
+    property <length> cellh: 118px;
+
+    Flickable {
+        width: 100%;
+        height: 100%;
+        viewport-height: pad * 2 + (AppData.files.length / cols).ceil() * (cellh + gap);
+        for it[i] in AppData.files : Rectangle {
+            x: pad + i.mod(cols) * (cellw + gap);
+            y: pad + (i / cols).floor() * (cellh + gap);
+            width: cellw;
+            height: cellh;
+            border-radius: 10px;
+            background: it.selected ? Theme.sel-bg : (gta.has-hover ? Theme.hover : transparent);
+            VerticalLayout {
+                padding-top: 14px;
+                padding-bottom: 10px;
+                spacing: 9px;
+                alignment: start;
+                VerticalLayout { alignment: center; HorizontalLayout { alignment: center;
+                    Rectangle {
+                        width: 56px; height: 56px;
+                        FileIconView { item: it; size: 44px; selected: it.selected; }
+                    }
+                } }
+                Text {
+                    text: it.name;
+                    horizontal-alignment: center;
+                    font-size: 12px;
+                    font-weight: 500;
+                    wrap: word-wrap;
+                    overflow: elide;
+                    color: it.selected ? Theme.sel-fg : Theme.text;
+                }
+                HorizontalLayout { alignment: center; spacing: 3px;
+                    for t in it.tags : TagDot { color-index: t; d: 8px; }
+                }
+            }
+            gta := TouchArea {
+                pointer-event(ev) => {
+                    if (ev.kind == PointerEventKind.down) {
+                        Logic.row-down(i,
+                            ev.modifiers.control || ev.modifiers.meta,
+                            ev.modifiers.shift,
+                            ev.button == PointerEventButton.right);
+                        if (ev.button == PointerEventButton.right) {
+                            Menus.x = gta.absolute-position.x + gta.mouse-x;
+                            Menus.y = gta.absolute-position.y + gta.mouse-y;
+                            Menus.ctx-index = i;
+                            Menus.open = "context";
+                        }
+                    }
+                }
+                double-clicked => { Logic.row-open(i); }
+            }
+        }
+    }
+}
+
+export component EmptyState {
+    VerticalLayout {
+        width: 100%;
+        height: 100%;
+        alignment: center;
+        HorizontalLayout { alignment: center;
+            VerticalLayout {
+                spacing: 12px;
+                HorizontalLayout { alignment: center;
+                    Icon { name: AppData.query != "" ? "search" : "folderOpen"; size: 40px; sw: 1.3px; color: Theme.text-3; }
+                }
+                Text {
+                    text: AppData.query != "" ? "No results" : "This folder is empty";
+                    horizontal-alignment: center;
+                    font-size: 14px;
+                    font-weight: 550;
+                    color: Theme.text-2;
+                }
+                if AppData.query != "" : Text {
+                    text: "Nothing matches \"" + AppData.query + "\".";
+                    horizontal-alignment: center;
+                    font-size: 12.5px;
+                    color: Theme.text-3;
+                }
+            }
+        }
+    }
+}

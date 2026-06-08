@@ -1,0 +1,52 @@
+// Data structs populated from Rust (the current folder, drives, breadcrumb, ...).
+export struct FileRow {
+    id: int,
+    name: string,
+    icon: string,        // glyph name
+    is-folder: bool,
+    is-media: bool,
+    date-text: string,
+    size-text: string,
+    kind-text: string,
+    tags: [int],         // tag color indices
+    selected: bool,
+    downloading: bool,
+    progress: float,     // 0..1
+}
+
+export struct DriveRow {
+    id: string,
+    name: string,
+    icon: string,
+    free-text: string,
+    total-text: string,
+    pct: float,          // 0..1
+    ejectable: bool,
+    active: bool,
+}
+
+export struct FavRow {
+    label: string,
+    icon: string,
+    active: bool,
+}
+
+export struct TagRow {
+    key: string,
+    name: string,
+    color: int,
+    active: bool,
+}
+
+export struct CrumbRow {
+    label: string,
+    icon: string,        // "" if none
+    tag: int,            // -1 if none
+    nav-index: int,      // path length to navigate to; -1 = not navigable
+    last: bool,
+}
+
+export struct DetailRow {
+    key: string,
+    value: string,
+}

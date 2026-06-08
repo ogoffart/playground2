@@ -1,0 +1,80 @@
+import { Palette } from "std-widgets.slint";
+
+// Design tokens ported from Harbor index.html (:root light / [data-theme=dark]).
+// OKLCH source values converted to hex/rgba. Light & dark pairs selected by `dark`.
+export global Theme {
+    // theme preference: 0 = system, 1 = light, 2 = dark
+    in-out property <int> pref: 0;
+    out property <bool> dark: pref == 1 ? false
+        : pref == 2 ? true
+        : Palette.color-scheme == ColorScheme.dark;
+
+    // ---- surfaces ----
+    out property <brush> win-bg:      dark ? #26282d : #fdfdfe;
+    out property <brush> titlebar:    dark ? #212328 : #f3f4f6;
+    out property <brush> sidebar-bg:  dark ? #1e2025 : #f3f4f6;
+    out property <brush> content-bg:  dark ? #282a30 : #ffffff;
+    out property <brush> panel-bg:    dark ? #232529 : #fafbfc;
+    out property <brush> statusbar:   dark ? #202227 : #f5f5f7;
+
+    // ---- hairlines / states ----
+    out property <brush> border:        dark ? #ffffff16 : #00000016;
+    out property <brush> border-strong: dark ? #ffffff24 : #00000024;
+    out property <brush> hover:         dark ? #ffffff0e : #0000000b;
+    out property <brush> active:        dark ? #ffffff17 : #00000013;
+    out property <brush> win-ring:      dark ? #ffffff1a : #0000001f;
+
+    // ---- text ----
+    out property <brush> text:   dark ? #eef0f2 : #2c2f36;
+    out property <brush> text-2: dark ? #abafb6 : #5c616b;
+    out property <brush> text-3: dark ? #7e828a : #878b93;
+
+    // ---- accent / selection ----
+    out property <brush> accent:      dark ? #5b8cf0 : #2f6fed;
+    out property <brush> accent-soft: dark ? rgba(91,140,240,0.20) : rgba(47,111,237,0.13);
+    out property <brush> accent-fg:   dark ? #14171d : #ffffff;
+    out property <brush> sel-bg:      dark ? #3667d4 : #2f6fed;
+    out property <brush> sel-fg:      #ffffff;
+    out property <brush> sel-bg-blur: dark ? #ffffff14 : #00000012;
+
+    // ---- semantic ----
+    out property <brush> media:    #9b51c9;   // image/raw/video/audio icon tint
+    out property <brush> danger:   #e5484d;   // close-hover / trash
+    out property <brush> warn:     #f76b15;   // meter > 80%
+    out property <brush> full:     #e5484d;   // meter > 92%
+    out property <brush> brand-a:  accent;
+    out property <brush> brand-b:  #7c5cf0;
+
+    // ---- 45deg diagonal stripes for media preview placeholder ----
+    out property <brush> stripe: dark
+        ? @linear-gradient(45deg, #5b8cf01f 0%, #5b8cf01f 4%, transparent 4%, transparent 9%, #5b8cf01f 9%, #5b8cf01f 13%, transparent 13%, transparent 18%, #5b8cf01f 18%, #5b8cf01f 22%, transparent 22%, transparent 27%, #5b8cf01f 27%, #5b8cf01f 31%, transparent 31%, transparent 36%, #5b8cf01f 36%, #5b8cf01f 40%, transparent 40%, transparent 45%, #5b8cf01f 45%, #5b8cf01f 49%, transparent 49%, transparent 54%, #5b8cf01f 54%, #5b8cf01f 58%, transparent 58%, transparent 63%, #5b8cf01f 63%, #5b8cf01f 67%, transparent 67%, transparent 72%, #5b8cf01f 72%, #5b8cf01f 76%, transparent 76%, transparent 81%, #5b8cf01f 81%, #5b8cf01f 85%, transparent 85%, transparent 90%, #5b8cf01f 90%, #5b8cf01f 94%, transparent 94%, transparent 99%, #5b8cf01f 99%, #5b8cf01f 103%, transparent 103%, transparent 108%)
+        : @linear-gradient(45deg, #2f6fed1f 0%, #2f6fed1f 4%, transparent 4%, transparent 9%, #2f6fed1f 9%, #2f6fed1f 13%, transparent 13%, transparent 18%, #2f6fed1f 18%, #2f6fed1f 22%, transparent 22%, transparent 27%, #2f6fed1f 27%, #2f6fed1f 31%, transparent 31%, transparent 36%, #2f6fed1f 36%, #2f6fed1f 40%, transparent 40%, transparent 45%, #2f6fed1f 45%, #2f6fed1f 49%, transparent 49%, transparent 54%, #2f6fed1f 54%, #2f6fed1f 58%, transparent 58%, transparent 63%, #2f6fed1f 63%, #2f6fed1f 67%, transparent 67%, transparent 72%, #2f6fed1f 72%, #2f6fed1f 76%, transparent 76%, transparent 81%, #2f6fed1f 81%, #2f6fed1f 85%, transparent 85%, transparent 90%, #2f6fed1f 90%, #2f6fed1f 94%, transparent 94%, transparent 99%, #2f6fed1f 99%, #2f6fed1f 103%, transparent 103%, transparent 108%);
+
+    // ---- backdrop (radial gradient approximation) ----
+    out property <brush> backdrop: dark
+        ? @radial-gradient(circle, #2a2f3f 0%, #1f222e 50%, #15171f 100%)
+        : @radial-gradient(circle, #e3e7ee 0%, #d2d9e6 55%, #bcc7da 100%);
+
+    pure public function tag-name(i: int) -> string {
+        if (i == 0) { return "Red"; }
+        if (i == 1) { return "Orange"; }
+        if (i == 2) { return "Yellow"; }
+        if (i == 3) { return "Green"; }
+        if (i == 4) { return "Blue"; }
+        if (i == 5) { return "Purple"; }
+        if (i == 6) { return "Graphite"; }
+        return "";
+    }
+
+    // tag palette (same in both themes), index 0..6
+    pure public function tag-color(i: int) -> brush {
+        if (i == 0) { return #e5484d; } // red
+        if (i == 1) { return #f76b15; } // orange
+        if (i == 2) { return #ffb224; } // yellow
+        if (i == 3) { return #46a758; } // green
+        if (i == 4) { return #2f6fed; } // blue
+        if (i == 5) { return #8e4ec6; } // purple
+        if (i == 6) { return #8b8d98; } // graphite
+        return #8b8d98;
+    }
+}

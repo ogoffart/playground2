@@ -1,0 +1,203 @@
+import { Theme } from "theme.slint";
+import { Icon, IconButton, MenuItem, MenuSep, MenuHead, TagDot } from "widgets.slint";
+import { AppData, Logic, Menus } from "globals.slint";
+import { Titlebar, Toolbar } from "toolbar.slint";
+import { Sidebar } from "sidebar.slint";
+import { ListView2, GridView2, EmptyState } from "views.slint";
+import { DetailsPanel, StatusBar, TransfersPopover } from "panels.slint";
+
+export { AppData, Logic, Menus, Theme }
+
+component MenuPanel inherits Rectangle {
+    in property <length> panel-w: 210px;
+    width: panel-w;
+    height: lay.preferred-height;
+    border-radius: 10px;
+    background: Theme.titlebar;
+    border-width: 1px;
+    border-color: Theme.border-strong;
+    drop-shadow-blur: 40px;
+    drop-shadow-color: #00000066;
+    drop-shadow-offset-y: 18px;
+    lay := VerticalLayout {
+        padding: 5px;
+        @children
+    }
+}
+
+export component AppWindow inherits Window {
+    title: "Harbor";
+    preferred-width: 1320px;
+    preferred-height: 880px;
+    min-width: 900px;
+    min-height: 600px;
+    default-font-size: 13px;
+    background: Theme.backdrop;
+
+    // ---- centered window card ----
+    card := Rectangle {
+        width: min(1280px, parent.width * 0.94);
+        height: min(800px, parent.height * 0.92);
+        border-radius: 13px;
+        background: Theme.win-bg;
+        border-width: 1px;
+        border-color: Theme.win-ring;
+        drop-shadow-blur: 70px;
+        drop-shadow-color: Theme.dark ? #000000b3 : #00000059;
+        drop-shadow-offset-y: 28px;
+        clip: true;
+
+        fs := FocusScope {
+            key-pressed(e) => {
+                if (e.text == Key.Escape) {
+                    if (Menus.open != "") { Menus.close(); }
+                    else if (AppData.xfer-open) { AppData.xfer-open = false; }
+                    else { Logic.key-escape(); }
+                    return accept;
+                }
+                if (e.text == Key.UpArrow) { Logic.key-move(false); return accept; }
+                if (e.text == Key.DownArrow) { Logic.key-move(true); return accept; }
+                if (e.text == Key.Return) { Logic.key-enter(); return accept; }
+                if ((e.modifiers.control || e.modifiers.meta) && e.text == "a") { Logic.key-select-all(); return accept; }
+                if ((e.modifiers.control || e.modifiers.meta) && e.text == Key.Backspace) { Logic.key-trash(); return accept; }
+                return reject;
+            }
+
+            VerticalLayout {
+                Titlebar { }
+                Toolbar { }
+
+                // ---- body: sidebar | content | details ----
+                HorizontalLayout {
+                    // sidebar (slide collapse)
+                    Rectangle {
+                        width: AppData.sidebar-collapsed ? 0px : 232px;
+                        opacity: AppData.sidebar-collapsed ? 0 : 1;
+                        clip: true;
+                        animate width { duration: 260ms; easing: cubic-bezier(0.4, 0, 0.2, 1); }
+                        animate opacity { duration: 200ms; }
+                        Sidebar { x: 0; width: 232px; height: 100%; }
+                    }
+
+                    // content
+                    Rectangle {
+                        horizontal-stretch: 1;
+                        background: Theme.content-bg;
+                        clear-ta := TouchArea {
+                            clicked => { Logic.empty-click(); fs.focus(); }
+                        }
+                        if AppData.files.length == 0 : EmptyState { width: 100%; height: 100%; }
+                        if AppData.files.length > 0 && AppData.view == "list" : ListView2 { width: 100%; height: 100%; }
+                        if AppData.files.length > 0 && AppData.view == "grid" : GridView2 { width: 100%; height: 100%; }
+                    }
+
+                    // details (slide collapse)
+                    Rectangle {
+                        width: AppData.details-collapsed ? 0px : 296px;
+                        opacity: AppData.details-collapsed ? 0 : 1;
+                        clip: true;
+                        animate width { duration: 260ms; easing: cubic-bezier(0.4, 0, 0.2, 1); }
+                        animate opacity { duration: 200ms; }
+                        DetailsPanel { x: 0; width: 296px; height: 100%; }
+                    }
+                }
+
+                StatusBar { }
+            }
+        }
+    }
+
+    // ================= overlays (window coordinates) =================
+
+    // menu backdrop
+    if Menus.open != "" : TouchArea {
+        x: 0; y: 0;
+        width: root.width;
+        height: root.height;
+        clicked => { Menus.close(); }
+        pointer-event(ev) => { if (ev.button == PointerEventButton.right && ev.kind == PointerEventKind.down) { Menus.close(); } }
+    }
+
+    // ---- sort menu ----
+    if Menus.open == "sort" : MenuPanel {
+        panel-w: 210px;
+        x: Menus.x;
+        y: Menus.y;
+        MenuHead { text: "SORT BY"; }
+        MenuItem { label: "Name"; show-check: true; checked: AppData.sort-key == "name"; clicked => { Logic.set-sort-key("name"); Menus.close(); } }
+        MenuItem { label: "Date Modified"; show-check: true; checked: AppData.sort-key == "modified"; clicked => { Logic.set-sort-key("modified"); Menus.close(); } }
+        MenuItem { label: "Size"; show-check: true; checked: AppData.sort-key == "size"; clicked => { Logic.set-sort-key("size"); Menus.close(); } }
+        MenuItem { label: "Kind"; show-check: true; checked: AppData.sort-key == "kind"; clicked => { Logic.set-sort-key("kind"); Menus.close(); } }
+        MenuSep { }
+        MenuItem { label: "Ascending"; show-check: true; checked: AppData.sort-dir == "asc"; clicked => { Logic.set-sort-dir("asc"); Menus.close(); } }
+        MenuItem { label: "Descending"; show-check: true; checked: AppData.sort-dir == "desc"; clicked => { Logic.set-sort-dir("desc"); Menus.close(); } }
+    }
+
+    // ---- appearance menu (right aligned) ----
+    if Menus.open == "theme" : MenuPanel {
+        panel-w: 190px;
+        x: Menus.x - self.width;
+        y: Menus.y;
+        MenuHead { text: "APPEARANCE"; }
+        MenuItem { label: "System"; icon: "system"; show-check: true; checked: AppData.theme-pref == 0; clicked => { Logic.set-theme(0); Menus.close(); } }
+        MenuItem { label: "Light"; icon: "sun"; show-check: true; checked: AppData.theme-pref == 1; clicked => { Logic.set-theme(1); Menus.close(); } }
+        MenuItem { label: "Dark"; icon: "moon"; show-check: true; checked: AppData.theme-pref == 2; clicked => { Logic.set-theme(2); Menus.close(); } }
+    }
+
+    // ---- overflow menu (right aligned) ----
+    if Menus.open == "more" : MenuPanel {
+        panel-w: 220px;
+        x: Menus.x - self.width;
+        y: Menus.y;
+        MenuItem { label: "New Folder"; icon: "newfolder"; shortcut: "⇧⌘N"; clicked => { Logic.menu-action("new-folder"); Menus.close(); } }
+        MenuItem { label: AppData.details-collapsed ? "Show Details" : "Hide Details"; icon: "info"; shortcut: "⌘I"; clicked => { Logic.toggle-details(); Menus.close(); } }
+        MenuItem { label: AppData.sidebar-collapsed ? "Show Sidebar" : "Hide Sidebar"; icon: "sidebar"; clicked => { Logic.toggle-sidebar(); Menus.close(); } }
+        MenuSep { }
+        MenuItem { label: "Refresh"; icon: "refresh"; shortcut: "⌘R"; clicked => { Logic.menu-action("refresh"); Menus.close(); } }
+    }
+
+    // ---- context menu (cursor anchored) ----
+    if Menus.open == "context" : MenuPanel {
+        panel-w: 216px;
+        x: min(Menus.x, root.width - self.width - 8px);
+        y: min(Menus.y, root.height - self.height - 8px);
+        MenuItem {
+            label: "Open";
+            icon: (Menus.ctx-index >= 0 && Menus.ctx-index < AppData.files.length && AppData.files[Menus.ctx-index].is-folder) ? "folderOpen" : "forward";
+            clicked => { Logic.row-open(Menus.ctx-index); Menus.close(); }
+        }
+        MenuItem { label: "Get Info"; icon: "info"; shortcut: "⌘I"; clicked => { Logic.menu-action("get-info"); Menus.close(); } }
+        MenuSep { }
+        MenuItem { label: "Duplicate"; icon: "copy"; shortcut: "⌘D"; clicked => { Logic.menu-action("duplicate"); Menus.close(); } }
+        MenuItem { label: "Rename…"; icon: "rename"; clicked => { Logic.menu-action("rename"); Menus.close(); } }
+        MenuItem { label: "Share…"; icon: "share"; clicked => { Logic.menu-action("share"); Menus.close(); } }
+        MenuSep { }
+        MenuHead { text: "TAGS"; }
+        HorizontalLayout {
+            padding-left: 6px;
+            padding-right: 6px;
+            padding-top: 2px;
+            padding-bottom: 4px;
+            spacing: 8px;
+            for t in AppData.tags : Rectangle {
+                width: 17px; height: 17px;
+                TagDot { color-index: t.color; d: 17px; }
+                TouchArea { mouse-cursor: pointer; clicked => { Logic.tag-toggle(t.key); Menus.close(); } }
+            }
+        }
+        MenuSep { }
+        MenuItem { label: "Move to Trash"; icon: "trash"; shortcut: "⌘⌫"; danger: true; clicked => { Logic.menu-action("trash"); Menus.close(); } }
+    }
+
+    // ---- transfers popover (bottom right) ----
+    if AppData.xfer-open : Rectangle {
+        x: 0; y: 0; width: root.width; height: root.height;
+        TouchArea { clicked => { AppData.xfer-open = false; } }
+        TransfersPopover {
+            x: card.x + card.width - self.width - 14px;
+            y: card.y + card.height - self.height - 36px;
+        }
+    }
+
+    init => { fs.focus(); }
+}

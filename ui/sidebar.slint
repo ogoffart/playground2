@@ -1,0 +1,125 @@
+import { Theme } from "theme.slint";
+import { Icon, IconButton, Meter, TagDot } from "widgets.slint";
+import { AppData, Logic } from "globals.slint";
+
+component SideLabel inherits Text {
+    font-size: 11px;
+    font-weight: 650;
+    letter-spacing: 0.4px;
+    color: Theme.text-3;
+    height: 22px;
+    vertical-alignment: bottom;
+}
+
+export component Sidebar inherits Rectangle {
+    background: Theme.sidebar-bg;
+    clip: true;
+    Rectangle {
+        width: 1px;
+        x: parent.width - 1px;
+        background: Theme.border;
+    }
+    Flickable {
+        viewport-width: self.width;
+        VerticalLayout {
+            padding: 10px;
+            padding-bottom: 14px;
+            spacing: 0px;
+
+            // ---- Favorites ----
+            SideLabel { text: "FAVORITES"; }
+            for fav[i] in AppData.favorites : Rectangle {
+                height: 30px;
+                border-radius: 7px;
+                background: fav.active ? Theme.accent-soft : (fta.has-hover ? Theme.hover : transparent);
+                animate background { duration: 100ms; }
+                HorizontalLayout {
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    spacing: 9px;
+                    Icon { name: fav.icon; size: 17px; color: fav.active ? Theme.accent : Theme.text-2; }
+                    Text {
+                        text: fav.label;
+                        vertical-alignment: center;
+                        horizontal-stretch: 1;
+                        font-size: 13px;
+                        font-weight: fav.active ? 600 : 500;
+                        color: fav.active ? Theme.accent : Theme.text;
+                        overflow: elide;
+                    }
+                }
+                fta := TouchArea { mouse-cursor: pointer; clicked => { Logic.fav-clicked(i); } }
+            }
+
+            Rectangle { height: 14px; }
+
+            // ---- Locations (drives) ----
+            SideLabel { text: "LOCATIONS"; }
+            for d[i] in AppData.drives : Rectangle {
+                height: 52px;
+                border-radius: 8px;
+                background: d.active ? Theme.accent-soft : (dta.has-hover ? Theme.hover : transparent);
+                animate background { duration: 100ms; }
+                VerticalLayout {
+                    padding: 7px;
+                    padding-top: 7px;
+                    spacing: 4px;
+                    HorizontalLayout {
+                        spacing: 9px;
+                        Icon { name: d.icon; size: 17px; color: Theme.text-2; }
+                        Text {
+                            text: d.name;
+                            vertical-alignment: center;
+                            horizontal-stretch: 1;
+                            font-size: 13px;
+                            font-weight: 500;
+                            color: Theme.text;
+                            overflow: elide;
+                        }
+                        if d.ejectable && dta.has-hover : IconButton {
+                            icon: "eject";
+                            icon-size: 15px;
+                            btn-w: 18px;
+                            btn-h: 18px;
+                            radius: 4px;
+                            base-color: Theme.text-3;
+                            clicked => { Logic.drive-eject(d.id); }
+                        }
+                    }
+                    Meter { pct: d.pct; }
+                    Text {
+                        text: d.free-text + " free of " + d.total-text;
+                        font-size: 11px;
+                        color: Theme.text-3;
+                    }
+                }
+                dta := TouchArea { mouse-cursor: pointer; }
+            }
+
+            Rectangle { height: 14px; }
+
+            // ---- Tags ----
+            SideLabel { text: "TAGS"; }
+            for t[i] in AppData.tags : Rectangle {
+                height: 30px;
+                border-radius: 7px;
+                background: t.active ? Theme.accent-soft : (tta.has-hover ? Theme.hover : transparent);
+                animate background { duration: 100ms; }
+                HorizontalLayout {
+                    padding-left: 8px;
+                    padding-right: 8px;
+                    spacing: 9px;
+                    VerticalLayout { alignment: center; TagDot { color-index: t.color; } }
+                    Text {
+                        text: t.name;
+                        vertical-alignment: center;
+                        horizontal-stretch: 1;
+                        font-size: 13px;
+                        color: Theme.text;
+                    }
+                }
+                tta := TouchArea { mouse-cursor: pointer; clicked => { Logic.tag-clicked(t.key); } }
+            }
+        }
+    }
+}
