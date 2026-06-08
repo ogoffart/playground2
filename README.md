@@ -57,16 +57,19 @@ forwards interactions back through the `Logic` global.
 python3 tools/gen_icons.py   # rewrites ui/icons.slint
 ```
 
-## Screenshots (optional)
+## Inspecting / screenshotting (embedded Slint MCP)
 
-A render-to-PNG path is gated behind a feature for verification:
+Slint ≥ 1.17 ships an embedded MCP server for runtime inspection — screenshots,
+clicking elements, typing, and walking the UI tree. Build with the `slint/mcp`
+feature and run with debug info enabled:
 
 ```sh
-SLINT_BACKEND=winit-software HARBOR_SHOT=out.png \
-  xvfb-run -a cargo run --features screenshot
+SLINT_EMIT_DEBUG_INFO=1 SLINT_MCP_PORT=9315 cargo run --features slint/mcp
 ```
 
-Env hooks (screenshot feature only): `HARBOR_THEME` (0/1/2), `HARBOR_VIEW`
-(list/grid), `HARBOR_SELECT` (row index), `HARBOR_MENU` (sort/theme/more/context).
+Then connect to `http://localhost:9315/mcp` (Streamable HTTP / JSON-RPC). On a
+headless machine, wrap the run in `xvfb-run -a -s "-screen 0 1360x900x24"` and use
+`SLINT_BACKEND=winit-software`. A ready-to-use `.mcp.json` registers this endpoint
+for Claude Code, and the Slint skill lives in `.claude/skills/slint/`.
 
 [Slint]: https://slint.dev

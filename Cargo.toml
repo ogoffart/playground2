@@ -6,10 +6,6 @@ edition = "2021"
 [dependencies]
 slint = { git = "https://github.com/slint-ui/slint", branch = "master" }
 chrono = "0.4"
-image = { version = "0.25", optional = true, default-features = false, features = ["png"] }
-
-[features]
-screenshot = ["dep:image"]
 
 [build-dependencies]
 slint-build = { git = "https://github.com/slint-ui/slint", branch = "master" }

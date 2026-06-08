@@ -930,47 +930,5 @@ fn main() -> Result<(), slint::PlatformError> {
 
     app.refresh();
 
-    #[cfg(feature = "screenshot")]
-    if let Ok(path) = std::env::var("HARBOR_SHOT") {
-        if let Ok(t) = std::env::var("HARBOR_THEME") {
-            app.theme_pref.set(t.parse().unwrap_or(0));
-        }
-        if let Ok(v) = std::env::var("HARBOR_VIEW") {
-            *app.view.borrow_mut() = v;
-        }
-        app.refresh();
-        if let Ok(s) = std::env::var("HARBOR_SELECT") {
-            if let Ok(i) = s.parse::<i32>() {
-                app.row_down(i, false, false, false);
-            }
-        }
-        if let Ok(m) = std::env::var("HARBOR_MENU") {
-            let menus = ui.global::<Menus>();
-            menus.set_open(m.into());
-            menus.set_x(720.0);
-            menus.set_y(180.0);
-            menus.set_ctx_index(4);
-        }
-        let w = ui.as_weak();
-        let shot = slint::Timer::default();
-        shot.start(slint::TimerMode::SingleShot, std::time::Duration::from_millis(800), move || {
-            if let Some(ui) = w.upgrade() {
-                if let Ok(buf) = ui.window().take_snapshot() {
-                    image::save_buffer(
-                        &path,
-                        buf.as_bytes(),
-                        buf.width(),
-                        buf.height(),
-                        image::ColorType::Rgba8,
-                    ).unwrap();
-                }
-            }
-            slint::quit_event_loop().unwrap();
-        });
-        // keep the timer alive for the duration of the run
-        let _ = ui.run();
-        return Ok(());
-    }
-
     ui.run()
 }
