@@ -6,6 +6,28 @@ desktop-UI patterns: data tables, a sidebar with live drive meters, sortable
 columns, OS-following light/dark theming, an inspector/details panel, context
 menus, and live-updating data (an in-progress download, drifting disk usage).
 
+## Screenshots
+
+**List view, light theme** — OS-following theme, sortable columns, file-type icons,
+tag dots, drive meters in the sidebar, and an inline download progressing in a row.
+
+![Harbor — list view, light theme](docs/images/list-light.png)
+
+**Details panel, dark theme** — selecting a file shows a preview (striped for media),
+metadata grid, tag chips, and Open/Share actions; the accent follows the OS palette.
+
+![Harbor — details panel, dark theme](docs/images/details-dark.png)
+
+**Grid view** — `repeat(auto-fill)`-style wrapping cells with thumbnails, clamped
+names, and tag dots.
+
+![Harbor — grid view](docs/images/grid-light.png)
+
+**Right-click context menu** — Open / Get Info / Duplicate / Rename / Share, a row
+of tag swatches, and a danger-styled Move to Trash.
+
+![Harbor — context menu](docs/images/context-dark.png)
+
 ## Running
 
 ```sh
