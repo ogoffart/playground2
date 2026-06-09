@@ -29,12 +29,12 @@ export global Theme {
     out property <brush> text-2: dark ? #abafb6 : #5c616b;
     out property <brush> text-3: dark ? #7e828a : #878b93;
 
-    // ---- accent / selection ----
-    out property <brush> accent:      dark ? #5b8cf0 : #2f6fed;
-    out property <brush> accent-soft: dark ? rgba(91,140,240,0.20) : rgba(47,111,237,0.13);
-    out property <brush> accent-fg:   dark ? #14171d : #ffffff;
-    out property <brush> sel-bg:      dark ? #3667d4 : #2f6fed;
-    out property <brush> sel-fg:      #ffffff;
+    // ---- accent / selection (driven by the OS / style palette) ----
+    out property <brush> accent:      Palette.accent-background;
+    out property <brush> accent-soft: dark ? accent.with-alpha(0.20) : accent.with-alpha(0.13);
+    out property <brush> accent-fg:   Palette.accent-foreground;
+    out property <brush> sel-bg:      accent;
+    out property <brush> sel-fg:      accent-fg;
     out property <brush> sel-bg-blur: dark ? #ffffff14 : #00000012;
 
     // ---- semantic ----
