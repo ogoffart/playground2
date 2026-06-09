@@ -23,10 +23,11 @@ These bite almost everyone at least once.
     `Math.round`, `Math.floor`, `Math.pow`, `Math.sin`, `Math.atan2`, …
   Use these instead of guessing a bare `floor(...)`. Integer division yields a
   float, so wrap with `.floor()` when assigning to an `int`.
-- **Rotation** (`rotation-angle`) exists only on `Image` and `Text`, **not** on
-  `Rectangle` or arbitrary components. To "rotate" something else, rotate an
-  `Image`, swap to a pre-rotated glyph, or express the effect another way
-  (e.g. a gradient for diagonal stripes, a flipped path for a chevron).
+- **Rotation** is only on `Image` and `Text` — **not** on `Rectangle` or arbitrary
+  components. Use `transform-rotation` (the `rotation-angle` alias is deprecated).
+  To "rotate" something else, rotate an `Image`, swap to a pre-rotated glyph, or
+  express the effect another way (a gradient for diagonal stripes, a flipped path
+  for a chevron).
 - **Enum values** are written `EnumName.value`, usually lowercase for builtins:
   `PointerEventKind.down`, `PointerEventButton.right`, `ColorScheme.dark`. Special
   keys use the `Key` namespace with CamelCase: `Key.Return`, `Key.Escape`,
