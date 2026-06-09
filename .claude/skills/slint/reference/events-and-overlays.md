@@ -18,19 +18,24 @@
   ```
   Other members: `has-hover`, `pressed`, `mouse-x`/`mouse-y` (local),
   `absolute-position` (window coords), `mouse-cursor`.
-- **`FocusScope`** for keys — it must hold focus, so call `myscope.focus()` (often
-  in `init`). The handler returns `accept`/`reject`:
+- **`FocusScope`** for keys — it must hold focus. Give it focus **declaratively**
+  with `forward-focus` on an ancestor/`Window` (the idiomatic way), and use
+  `scope.focus()` only for imperative re-focusing (e.g. after a `TextInput` stole
+  focus). The handler returns `accept`/`reject`:
   ```slint
-  FocusScope {
-      key-pressed(e) => {
-          if (e.text == Key.Escape) { return accept; }
-          if ((e.modifiers.control || e.modifiers.meta) && e.text == "a") { return accept; }
-          return reject;
+  export component App inherits Window {
+      forward-focus: fs;   // fs gets focus when the window is activated
+      fs := FocusScope {
+          key-pressed(e) => {
+              if (e.text == Key.Escape) { return accept; }
+              if ((e.modifiers.control || e.modifiers.meta) && e.text == "a") { return accept; }
+              return reject;
+          }
       }
   }
   ```
   Clicking a `TextInput`/widget steals focus; refocus the scope (e.g. on a
-  background click) so shortcuts keep working.
+  background click, `fs.focus()`) so shortcuts keep working.
 
 ## Overlays, Popovers & Context Menus
 

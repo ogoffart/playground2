@@ -33,6 +33,7 @@ export component AppWindow inherits Window {
     min-height: 600px;
     default-font-size: 13px;
     background: Theme.backdrop;
+    forward-focus: fs;   // give the key-handling FocusScope initial focus
 
     // ---- centered window card ----
     card := Rectangle {
@@ -198,6 +199,4 @@ export component AppWindow inherits Window {
             y: card.y + card.height - self.height - 36px;
         }
     }
-
-    init => { fs.focus(); }
 }
